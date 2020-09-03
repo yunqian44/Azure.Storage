@@ -1,87 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Azure.Storage.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Azure.Storage.Controllers
 {
+    [Route("api/[controller]")]
     public class FilesController : Controller
     {
-        // GET: Files
-        public ActionResult Index()
+        private const int MaxFilenameLength = 50;
+        private static readonly Regex filenameRegex = new Regex("[^a-zA-Z0-9._]");
+
+        private readonly IStorage storage;
+
+        public FilesController(IStorage storage)
         {
-            return View();
+            this.storage = storage;
         }
 
-        // GET: Files/Details/5
-        public ActionResult Details(int id)
+        // GET /api/Files
+        // Called by the page when it's first loaded, whenever new files are uploaded, and every
+        // five seconds on a timer.
+        [HttpGet()]
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var names = await storage.GetNames();
+
+            var baseUrl = Request.Path.Value;
+
+            var urls = names.Select(n => $"{baseUrl}/{n}");
+
+            return Ok(urls);
         }
 
-        // GET: Files/Create
-        public ActionResult Create()
+        // POST /api/Files
+        // Called once for each file uploaded.
+        [HttpPost()]
+        public async Task<IActionResult> Upload(IFormFile file)
         {
-            return View();
-        }
+            // IFormFile.FileName is untrustworthy user input, and we're
+            // using it for both blob names and for display on the page,
+            // so we aggressively sanitize. In a real app, we'd probably
+            // do something more complex and robust for handling filenames.
+            var name = SanitizeFilename(file.FileName);
 
-        // POST: Files/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
+            if (String.IsNullOrWhiteSpace(name))
             {
-                return RedirectToAction(nameof(Index));
+                throw new ArgumentException();
             }
-            catch
+
+            using (Stream stream = file.OpenReadStream())
             {
-                return View();
+                await storage.Save(stream, name);
             }
+
+            return Accepted();
         }
 
-        // GET: Files/Edit/5
-        public ActionResult Edit(int id)
+        // GET /api/Files/{filename}
+        // Called when clicking a link to download a specific file.
+        [HttpGet("{filename}")]
+        public async Task<IActionResult> Download(string filename)
         {
-            return View();
+            var stream = await storage.Load(filename);
+
+            // This usage of File() always triggers the browser to perform a file download.
+            // We always use "application/octet-stream" as the content type because we don't record
+            // any information about content type from the user when they upload a file.
+            return File(stream, "application/octet-stream", filename);
         }
 
-        // POST: Files/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        private static string SanitizeFilename(string filename)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+            var sanitizedFilename = filenameRegex.Replace(filename, "").TrimEnd('.');
 
-        // GET: Files/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+            if (sanitizedFilename.Length > MaxFilenameLength)
+            {
+                sanitizedFilename = sanitizedFilename.Substring(0, MaxFilenameLength);
+            }
 
-        // POST: Files/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return sanitizedFilename;
         }
     }
 }

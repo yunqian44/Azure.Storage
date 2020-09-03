@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Storage.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Azure.Storage
 {
@@ -24,6 +26,16 @@ namespace Azure.Storage
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
+            services.Configure<AzureStorageConfig>(Configuration.GetSection("AzureStorageConfig"));
+
+            // Wire up a single instance of BlobStorage, calling Initialize() when we first use it.
+            services.AddSingleton<IStorage>(serviceProvider => {
+                var blobStorage = new BlobStorage(serviceProvider.GetService<IOptions<AzureStorageConfig>>());
+                blobStorage.Initialize().GetAwaiter().GetResult();
+                return blobStorage;
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

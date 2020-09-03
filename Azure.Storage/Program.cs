@@ -20,7 +20,9 @@ namespace Azure.Storage
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                    .UseUrls("http://*:9001")
+                    .UseStartup<Startup>();
                 });
     }
 }

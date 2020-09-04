@@ -11,7 +11,7 @@ namespace Azure.Storage.Service
     {
         Task<BlobInfo> GetBlobAsync(string name);
 
-        Task<IEnumerable<string>> ListBlobsAsync();
+        Task<IEnumerable<string>> ListBlobsNameAsync();
 
         Task UploadFileBlobAsync(string filePath, string filename);
 

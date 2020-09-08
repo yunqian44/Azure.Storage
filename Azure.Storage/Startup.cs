@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
 
 namespace Azure.Storage
 {
@@ -30,7 +32,11 @@ namespace Azure.Storage
 
             services.AddSingleton(x => new BlobServiceClient(Configuration.GetValue<string>("AzureBlobStorageConnectionString")));
 
+            services.AddSingleton(x => new CloudStorageAccount(new StorageCredentials("cnbateblogaccount", "FU01h022mn1JjONp+ta0DAXOO7ThK3diYhd4xrm0Hpg891n9nycsTLGZF83nJpGvTIZvO5VCVFhGOfV0wndOOQ=="), true));
+
             services.AddSingleton<IBlobSergvice, BlobService>();
+
+            services.AddSingleton<ITableService, TableService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

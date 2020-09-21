@@ -34,9 +34,12 @@ namespace Azure.Storage
 
             services.AddSingleton(x => new CloudStorageAccount(new StorageCredentials("cnbateblogaccount", "FU01h022mn1JjONp+ta0DAXOO7ThK3diYhd4xrm0Hpg891n9nycsTLGZF83nJpGvTIZvO5VCVFhGOfV0wndOOQ=="), true));
 
-            services.AddSingleton<IBlobSergvice, BlobService>();
+            //
+            services.AddSingleton(x => new Microsoft.Azure.Cosmos.Table.CloudStorageAccount(new Microsoft.Azure.Cosmos.Table.StorageCredentials("cnbateblogaccount", "FU01h022mn1JjONp+ta0DAXOO7ThK3diYhd4xrm0Hpg891n9nycsTLGZF83nJpGvTIZvO5VCVFhGOfV0wndOOQ=="), true));
 
+            services.AddSingleton<IBlobSergvice, BlobService>();
             services.AddSingleton<ITableService, TableService>();
+            services.AddSingleton<ITableServiceV2, TableServiceV2>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

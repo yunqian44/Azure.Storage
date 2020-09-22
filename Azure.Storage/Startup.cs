@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 using Azure.Storage.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,9 +38,13 @@ namespace Azure.Storage
             //
             services.AddSingleton(x => new Microsoft.Azure.Cosmos.Table.CloudStorageAccount(new Microsoft.Azure.Cosmos.Table.StorageCredentials("cnbateblogaccount", "FU01h022mn1JjONp+ta0DAXOO7ThK3diYhd4xrm0Hpg891n9nycsTLGZF83nJpGvTIZvO5VCVFhGOfV0wndOOQ=="), true));
 
+
+            services.AddSingleton(x => new QueueClient("DefaultEndpointsProtocol=https;AccountName=cnbateblogaccount;AccountKey=e2T2gYREFdxkYIJocvC4Wut7khxMWJCbQBp8tPM2EJt37QaUUlflTPAlkoJzIlY29aGYt8WW0xx1bckO4hLKJA==;EndpointSuffix=core.windows.net", "blogmessage"));
+
             services.AddSingleton<IBlobSergvice, BlobService>();
             services.AddSingleton<ITableService, TableService>();
             services.AddSingleton<ITableServiceV2, TableServiceV2>();
+            services.AddSingleton<IQueueService, QueueService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

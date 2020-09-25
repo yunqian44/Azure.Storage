@@ -19,79 +19,33 @@ namespace Azure.Storage.Controllers
             this._queueService = queueSerivce;
         }
 
-        // GET: QueueExplorerController
-        public ActionResult Index()
+        [HttpPost("AddQueue")]
+        public async Task<ActionResult> AddQueue()
         {
-            return View();
+            string msg = $"我是添加进去的第一个消息";
+            await _queueService.AddMessage(msg);
+            return Ok();
         }
 
-        // GET: QueueExplorerController/Details/5
-        public ActionResult Details(int id)
+        [HttpGet("QueryQueue")]
+        public  ActionResult QueryQueue()
         {
-            return View();
+            return Ok( _queueService.GetMessages());
+            
         }
 
-        // GET: QueueExplorerController/Create
-        public ActionResult Create()
+        [HttpPut("UpdateQueue")]
+        public async Task<ActionResult> UpdateQueue()
         {
-            return View();
+            await _queueService.UpdateMessage();
+            return Ok();
         }
 
-        // POST: QueueExplorerController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        [HttpGet("ProcessingMessage")]
+        public async Task<ActionResult> ProcessingQueue()
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: QueueExplorerController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: QueueExplorerController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: QueueExplorerController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: QueueExplorerController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            await _queueService.ProcessingMessage();
+            return Ok();
         }
     }
 }

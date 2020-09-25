@@ -1,10 +1,12 @@
-﻿using Azure.Storage.Queues;
+﻿using Azure.Storage.Extension;
+using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.VisualBasic;
 using Microsoft.WindowsAzure.Storage.Queue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Azure.Storage.Service
@@ -32,8 +34,9 @@ namespace Azure.Storage.Service
 
             if (_queueClient.Exists())
             {
+ 
                 // Send a message to the queue
-                 await _queueClient.SendMessageAsync(msg);
+                 await _queueClient.SendMessageAsync(msg.EncryptBase64());
             }
         }
 
@@ -46,7 +49,7 @@ namespace Azure.Storage.Service
                 for (int i = 0; i < peekedMessage.Length; i++)
                 {
                     //Display the message
-                    yield return string.Format($"Peeked message: '{peekedMessage[i].MessageText}'") ;
+                    yield return string.Format($"Peeked message: '{peekedMessage[i].MessageText.DecodeBase64()}'") ;
                 }
             }
         }
@@ -86,7 +89,7 @@ namespace Azure.Storage.Service
                 // Update the message contents
                 await _queueClient.UpdateMessageAsync(message[0].MessageId,
                         message[0].PopReceipt,
-                        "Updated contents",
+                        "Updated contents".EncryptBase64(),
                         TimeSpan.FromSeconds(60.0)  // Make it invisible for another 60 seconds
                     );
             }

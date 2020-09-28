@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Storage.File;
+﻿using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.File;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,18 +12,35 @@ namespace Azure.Storage.Service
     public class FileService : IFileService
     {
         private readonly CloudFileClient _cloudFileClient;
-        public FileService(CloudFileClient cloudFileClient)
+        public FileService(CloudStorageAccount cloudStorageClient)
         {
-            this._cloudFileClient = cloudFileClient;
+            this._cloudFileClient = cloudStorageClient.CreateCloudFileClient();
         }
 
-        public Task DeleteFileAsync(string name)
+        public async Task<bool> DeleteFileAsync(string filename)
         {
-            throw new NotImplementedException();
+            var fileShare = _cloudFileClient.GetShareReference("bloglogfile");
+
+            await fileShare.CreateIfNotExistsAsync();
+            if (fileShare.Exists())
+            {
+                var rootDir = fileShare.GetRootDirectoryReference();
+                var portraitDir = rootDir.GetDirectoryReference("portrait");
+                await portraitDir.CreateIfNotExistsAsync();
+
+                if (portraitDir.Exists())
+                {
+                    var file = portraitDir.GetFileReference(filename);
+
+                    return await file.DeleteIfExistsAsync();
+                }
+            }
+            return false;
         }
 
         public async Task DownFileAsync(string fileName, string downloadPath)
         {
+            
             var fileShare = _cloudFileClient.GetShareReference("bloglogfile");
 
             await fileShare.CreateIfNotExistsAsync();
@@ -42,12 +60,11 @@ namespace Azure.Storage.Service
             }
         }
 
-        public async Task<MemoryStream> GetFileAsync(string fileName,string downloadPath)
+        public async Task<string> GetFileContentAsync(string fileName)
         {
             var fileShare = _cloudFileClient.GetShareReference("bloglogfile");
 
             await fileShare.CreateIfNotExistsAsync();
-            await using var memoryStream = new MemoryStream();
             if (fileShare.Exists())
             {
                 var rootDir= fileShare.GetRootDirectoryReference();
@@ -57,12 +74,11 @@ namespace Azure.Storage.Service
                 if (portraitDir.Exists())
                 {
                     var file= portraitDir.GetFileReference(fileName);
-                    
-                    await file.DownloadToStreamAsync(memoryStream);
-                    
+
+                    return file.DownloadTextAsync().Result;
                 }
             }
-            return memoryStream;
+            return string.Empty;
         }
 
         public async Task UpLoadFileAsync(string filePath, string fileName)
@@ -79,7 +95,7 @@ namespace Azure.Storage.Service
 
                 if (portraitDir.Exists())
                 {
-                    var file = portraitDir.GetFileReference("fileName");
+                    var file = portraitDir.GetFileReference(fileName);
 
                     await file.UploadFromFileAsync(filePath);
                 }

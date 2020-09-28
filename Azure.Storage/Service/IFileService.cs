@@ -12,9 +12,9 @@ namespace Azure.Storage.Service
 
         Task DownFileAsync(string fileName, string downloadPath);
 
-        Task<MemoryStream> GetFileAsync(string fileName, string downloadPath);
+        Task<string> GetFileContentAsync(string fileName);
 
-        Task DeleteFileAsync(string name);
+        Task<bool> DeleteFileAsync(string name);
 
     }
 }

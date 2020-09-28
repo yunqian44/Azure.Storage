@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
@@ -8,12 +9,14 @@ using Azure.Storage.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.Azure.Storage.File;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
+using AzureStorage = Microsoft.Azure.Storage;
 
 namespace Azure.Storage
 {
@@ -41,10 +44,17 @@ namespace Azure.Storage
 
             services.AddSingleton(x => new QueueClient("DefaultEndpointsProtocol=https;AccountName=cnbateblogaccount;AccountKey=e2T2gYREFdxkYIJocvC4Wut7khxMWJCbQBp8tPM2EJt37QaUUlflTPAlkoJzIlY29aGYt8WW0xx1bckO4hLKJA==;EndpointSuffix=core.windows.net", "blogmessage"));
 
+
+            services.AddSingleton(x => new AzureStorage.CloudStorageAccount(new AzureStorage.Auth.StorageCredentials("cnbateblogaccount", "e2T2gYREFdxkYIJocvC4Wut7khxMWJCbQBp8tPM2EJt37QaUUlflTPAlkoJzIlY29aGYt8WW0xx1bckO4hLKJA=="),true));
+
+
+            //services.AddSingleton(x => new CloudFileClient(new AzureStorage.StorageUri(new Uri("DefaultEndpointsProtocol=https;AccountName=cnbateblogaccount;AccountKey=e2T2gYREFdxkYIJocvC4Wut7khxMWJCbQBp8tPM2EJt37QaUUlflTPAlkoJzIlY29aGYt8WW0xx1bckO4hLKJA==;EndpointSuffix=core.windows.net")),new AzureStorage.Auth.StorageCredentials()));
+
             services.AddSingleton<IBlobSergvice, BlobService>();
             services.AddSingleton<ITableService, TableService>();
             services.AddSingleton<ITableServiceV2, TableServiceV2>();
             services.AddSingleton<IQueueService, QueueService>();
+            services.AddSingleton<IFileService, FileService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
